@@ -1,12 +1,13 @@
 * {
   transition: 0.2s all;
+  box-sizing: border-box;
   user-select: none;
 }
 .calc-wrapper {
   width: 400px;
-  height: 600px;
+  height: 700px;
   border: 1px solid black;
-  padding: 2rem;
+  padding: 1rem;
   background-color: gray;
   border-radius: 10px;
 }
@@ -15,6 +16,10 @@
   height: 100px;
   background-color: green;
   margin-bottom: 2rem;
+  color: white;
+  font-size: 30px;
+  padding: 1rem;
+  word-wrap: break-word;
 }
 
 .calc-buttons {

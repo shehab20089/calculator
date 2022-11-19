@@ -4,53 +4,74 @@ const operationOptions = {
     func: (a, b) => {
       return a + b;
     },
-    priority: 0,
   },
   "-": {
     func: (a, b) => {
       return a - b;
     },
-    priority: 0,
   },
   x: {
     func: (a, b) => {
       return a * b;
     },
-    priority: 1,
   },
   "/": {
     func: (a, b) => {
       return a / b;
     },
-    priority: 1,
   },
 };
 const operationOptionsArr = ["+", "-", "x", "/"];
+const numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."];
+let reachedEqual = false;
+function addNumberToScreen(number) {
+  if (reachedEqual) {
+    document.querySelector(".screen").textContent = "";
+    reachedEqual = false;
+  }
 
+  document.querySelector(".screen").textContent += number;
+  if (number === ".") {
+    document
+      .querySelector("button[calc-value='.']")
+      .removeEventListener("click", numClicked);
+  }
+}
+function numClicked(e) {
+  addNumberToScreen(e.target.getAttribute("calc-value"));
+}
 // Record the number input of user on screen
 document.querySelectorAll(".num-btns button").forEach((num) => {
-  num.addEventListener("click", (e) => {
-    document.querySelector(".screen").textContent +=
-      e.target.getAttribute("calc-value");
-  });
+  num.addEventListener("click", numClicked);
 });
+
+function addOperationToScreen(operation) {
+  if (reachedEqual) {
+    const resultValue = document
+      .querySelector(".screen")
+      .textContent.split("=")[1];
+    document.querySelector(".screen").textContent = resultValue;
+    reachedEqual = false;
+  }
+  const screenValue = document.querySelector(".screen").textContent;
+  document
+    .querySelector("button[calc-value='.']")
+    .addEventListener("click", numClicked);
+  // ensure to not add more than one operation at a time
+  if (
+    !operationOptionsArr.includes(screenValue[screenValue.length - 1]) &&
+    screenValue.length !== 0
+  )
+    document.querySelector(".screen").textContent += operation;
+}
 
 // Record the operation Input of user on screen
-document.querySelectorAll(".operation-btns button").forEach((operation) => {
+document.querySelectorAll("  button[operation-value]").forEach((operation) => {
   operation.addEventListener("click", (e) => {
-    const screenValue = document.querySelector(".screen").textContent;
-    // ensure to not add more than one operation at a time
-    if (
-      !operationOptionsArr.includes(screenValue[screenValue.length - 1]) &&
-      screenValue.length !== 0
-    )
-      document.querySelector(".screen").textContent +=
-        e.target.getAttribute("operation-value");
+    addOperationToScreen(e.target.getAttribute("operation-value"));
   });
 });
-
-// Handle Equal sign click
-document.querySelector(".equal").addEventListener("click", (e) => {
+function equalClicked() {
   const screenValue = document.querySelector(".screen").textContent;
   if (
     !operationOptionsArr.includes(screenValue[screenValue.length - 1]) &&
@@ -58,8 +79,11 @@ document.querySelector(".equal").addEventListener("click", (e) => {
   ) {
     const result = calculateTheScreen(screenValue);
     document.querySelector(".screen").textContent += `=${result}`;
+    reachedEqual = true;
   }
-});
+}
+// Handle Equal sign click
+document.querySelector(".equal").addEventListener("click", equalClicked);
 
 function calculateTheScreen(screen) {
   const screenToArr = screen.split("");
@@ -163,3 +187,15 @@ function calculateTheScreen(screen) {
   });
   return screenToArr.join("");
 }
+
+function addKey(e) {
+  const keyValue = e.key;
+  if (numberKeys.includes(keyValue)) {
+    addNumberToScreen(keyValue);
+  } else if (operationOptionsArr.includes(keyValue)) {
+    addOperationToScreen(keyValue);
+  } else if (keyValue === "Enter" || keyValue === "=") {
+    equalClicked();
+  }
+}
+document.addEventListener("keydown", addKey);
