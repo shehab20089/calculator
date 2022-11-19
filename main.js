@@ -10,7 +10,7 @@ const operationOptions = {
       return a - b;
     },
   },
-  x: {
+  "×": {
     func: (a, b) => {
       return a * b;
     },
@@ -21,21 +21,25 @@ const operationOptions = {
     },
   },
 };
-const operationOptionsArr = ["+", "-", "x", "/"];
+const operationOptionsArr = ["+", "-", "×", "/"];
 const numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."];
 let reachedEqual = false;
+let dotClicked = false;
+const screen = document.querySelector(".screen");
+
 function addNumberToScreen(number) {
   if (reachedEqual) {
-    document.querySelector(".screen").textContent = "";
+    screen.textContent = "";
     reachedEqual = false;
   }
-
-  document.querySelector(".screen").textContent += number;
   if (number === ".") {
-    document
-      .querySelector("button[calc-value='.']")
-      .removeEventListener("click", numClicked);
+    if (dotClicked) return;
+    if (!numberKeys.includes(screen.textContent[screen.textContent.length - 1]))
+      return;
+    dotClicked = true;
   }
+
+  screen.textContent += number;
 }
 function numClicked(e) {
   addNumberToScreen(e.target.getAttribute("calc-value"));
@@ -50,19 +54,17 @@ function addOperationToScreen(operation) {
     const resultValue = document
       .querySelector(".screen")
       .textContent.split("=")[1];
-    document.querySelector(".screen").textContent = resultValue;
+    screen.textContent = resultValue;
     reachedEqual = false;
   }
-  const screenValue = document.querySelector(".screen").textContent;
-  document
-    .querySelector("button[calc-value='.']")
-    .addEventListener("click", numClicked);
+  const screenValue = screen.textContent;
+  dotClicked = false;
   // ensure to not add more than one operation at a time
   if (
     !operationOptionsArr.includes(screenValue[screenValue.length - 1]) &&
     screenValue.length !== 0
   )
-    document.querySelector(".screen").textContent += operation;
+    screen.textContent += " " + operation + " ";
 }
 
 // Record the operation Input of user on screen
@@ -72,17 +74,18 @@ document.querySelectorAll("  button[operation-value]").forEach((operation) => {
   });
 });
 function equalClicked() {
-  const screenValue = document.querySelector(".screen").textContent;
+  const screenValue = screen.textContent;
   if (
-    !operationOptionsArr.includes(screenValue[screenValue.length - 1]) &&
-    screenValue.length !== 0
+    !operationOptionsArr.includes(screenValue[screenValue.length - 2]) &&
+    screenValue.length !== 0 &&
+    !screenValue.includes("=")
   ) {
     const result = calculateTheScreen(screenValue);
-    document.querySelector(".screen").textContent += `=${result}`;
+    screen.textContent += ` = ${result}`;
     reachedEqual = true;
   }
 }
-// Handle Equal sign click
+// Handle Equal sign click and take consideration to operator priority
 document.querySelector(".equal").addEventListener("click", equalClicked);
 
 function calculateTheScreen(screen) {
@@ -94,7 +97,7 @@ function calculateTheScreen(screen) {
     }
   });
   const highPriorityOperations = operationIndexes.filter((op) =>
-    ["x", "/"].includes(op.operation)
+    ["×", "/"].includes(op.operation)
   );
 
   highPriorityOperations.forEach((operation, i) => {
@@ -107,7 +110,7 @@ function calculateTheScreen(screen) {
     let leftLowPriorityOperationIndex = null;
     for (let j = operationIndex; j >= 0; j--) {
       const element = operationIndexes[j];
-      if (!["x", "/"].includes(element.operation)) {
+      if (!["×", "/"].includes(element.operation)) {
         leftLowPriorityOperationIndex = element.index;
         break;
       }
@@ -154,7 +157,7 @@ function calculateTheScreen(screen) {
       operationIndexes.push({ operation: digit, index: i });
   });
   const lowPriorityOperations = operationIndexes.filter(
-    (op) => !["x", "/"].includes(op.operation)
+    (op) => !["×", "/"].includes(op.operation)
   );
   // Calculate The screen low priority Operations
   lowPriorityOperations.forEach((operation, i) => {
@@ -185,17 +188,30 @@ function calculateTheScreen(screen) {
       ...(operationResult + "").split("")
     );
   });
-  return screenToArr.join("");
+  return Math.round(Number(screenToArr.join("")) * 100) / 100;
 }
-
+function removeInput() {
+  if (screen.textContent.length && !reachedEqual) {
+    const screenVal = screen.textContent.split("");
+    if (screenVal[screenVal.length - 1] === " ") screenVal.pop();
+    screenVal.pop();
+    screen.textContent = screenVal.join("");
+  }
+}
 function addKey(e) {
   const keyValue = e.key;
   if (numberKeys.includes(keyValue)) {
     addNumberToScreen(keyValue);
   } else if (operationOptionsArr.includes(keyValue)) {
     addOperationToScreen(keyValue);
-  } else if (keyValue === "Enter" || keyValue === "=") {
+  } else if (keyValue === "*") addOperationToScreen("×");
+  else if (keyValue === "Enter" || keyValue === "=") {
     equalClicked();
-  }
+  } else if (keyValue === "Backspace") removeInput();
 }
 document.addEventListener("keydown", addKey);
+
+document.querySelector(".clear").addEventListener("click", () => {
+  screen.textContent = "";
+});
+document.querySelector(".back").addEventListener("click", removeInput);

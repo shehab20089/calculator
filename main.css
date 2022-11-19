@@ -3,9 +3,17 @@
   box-sizing: border-box;
   user-select: none;
 }
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
 .calc-wrapper {
   width: 400px;
-  height: 700px;
+  /* height: 700px; */
   border: 1px solid black;
   padding: 1rem;
   background-color: gray;
@@ -13,7 +21,7 @@
 }
 .screen {
   width: 100%;
-  height: 100px;
+  min-height: 100px;
   background-color: green;
   margin-bottom: 2rem;
   color: white;
@@ -21,11 +29,16 @@
   padding: 1rem;
   word-wrap: break-word;
 }
+.screen-control {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 1rem;
+}
 
 .calc-buttons {
   display: flex;
   justify-content: space-between;
-  /* align-items: center; */
   gap: 1rem;
 }
 .num-btns {
@@ -35,7 +48,7 @@
   gap: 0.5rem;
 }
 .num-btns button {
-  height: 100px;
+  height: 60px;
   background-color: orange;
   color: white;
   font-size: 20px;
@@ -49,10 +62,10 @@ button:hover {
 .operation-btns {
   display: flex;
   flex-direction: column;
-  /* justify-content: space-between; */
   gap: 1rem;
 }
-.operation-btns button {
+.operation-btns button,
+.screen-control button {
   height: 80px;
   width: 80px;
   border-radius: 50%;
